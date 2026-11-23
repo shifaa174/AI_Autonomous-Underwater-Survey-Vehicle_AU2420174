@@ -1,0 +1,1042 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AUV Survey Simulation Cockpit | CSE518 AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #070d18;
+      --panel-bg: rgba(13, 24, 43, 0.85);
+      --panel-border: rgba(45, 95, 160, 0.35);
+      --accent-cyan: #00e5ff;
+      --accent-blue: #0077ff;
+      --accent-green: #00e676;
+      --accent-yellow: #ffd600;
+      --accent-red: #ff1744;
+      --accent-purple: #b388ff;
+      --text-main: #e0f2fe;
+      --text-muted: #7dd3fc;
+      --water-bg: #091a32;
+      --kelp-bg: #083c2a;
+      --reef-bg: #27272a;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: radial-gradient(circle at 50% 10%, #0d213f 0%, var(--bg-dark) 100%);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    header {
+      background: rgba(8, 17, 33, 0.9);
+      border-bottom: 1px solid var(--panel-border);
+      backdrop-filter: blur(12px);
+      padding: 14px 28px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-icon {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      box-shadow: 0 0 15px rgba(0, 229, 255, 0.4);
+    }
+
+    .brand h1 {
+      font-size: 1.25rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      background: linear-gradient(90deg, #ffffff, var(--accent-cyan));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .student-badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.82rem;
+      background: rgba(0, 229, 255, 0.1);
+      border: 1px solid rgba(0, 229, 255, 0.3);
+      padding: 6px 14px;
+      border-radius: 20px;
+      color: var(--accent-cyan);
+    }
+
+    main {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: 20px;
+      padding: 20px 28px;
+      max-width: 1700px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .view-panel {
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 18px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(10px);
+    }
+
+    .control-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid rgba(45, 95, 160, 0.25);
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    button {
+      background: #122849;
+      color: var(--text-main);
+      border: 1px solid var(--panel-border);
+      padding: 9px 18px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    button:hover {
+      background: #1c3b6d;
+      border-color: var(--accent-cyan);
+      box-shadow: 0 0 12px rgba(0, 229, 255, 0.25);
+      transform: translateY(-1px);
+    }
+
+    button.primary {
+      background: linear-gradient(135deg, var(--accent-blue), #0055bb);
+      border-color: transparent;
+      box-shadow: 0 0 15px rgba(0, 119, 255, 0.4);
+    }
+
+    button.primary:hover {
+      background: linear-gradient(135deg, #1a88ff, #0066dd);
+    }
+
+    .select-wrapper select {
+      background: #0f2240;
+      color: var(--text-main);
+      border: 1px solid var(--panel-border);
+      padding: 9px 14px;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      outline: none;
+    }
+
+    .canvas-container {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #040913;
+      border-radius: 14px;
+      border: 1px solid rgba(0, 229, 255, 0.15);
+      overflow: hidden;
+      position: relative;
+      min-height: 540px;
+    }
+
+    canvas {
+      display: block;
+      box-shadow: 0 0 30px rgba(0, 0, 0, 0.8);
+    }
+
+    .side-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .card {
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 16px;
+      padding: 18px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+    }
+
+    .card-title {
+      font-size: 0.88rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-weight: 700;
+      color: var(--accent-cyan);
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .gauge-container {
+      margin-top: 8px;
+    }
+
+    .gauge-bar-bg {
+      height: 22px;
+      background: #0a1728;
+      border-radius: 11px;
+      border: 1px solid rgba(45, 95, 160, 0.4);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .gauge-bar-fill {
+      height: 100%;
+      width: 100%;
+      background: linear-gradient(90deg, var(--accent-green), var(--accent-cyan));
+      border-radius: 11px;
+      transition: width 0.3s ease, background 0.3s ease;
+      box-shadow: 0 0 12px var(--accent-cyan);
+    }
+
+    .battery-stats {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 8px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.88rem;
+    }
+
+    .telemetry-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+
+    .telemetry-item {
+      background: rgba(9, 20, 36, 0.6);
+      border: 1px solid rgba(45, 95, 160, 0.25);
+      border-radius: 10px;
+      padding: 10px 12px;
+    }
+
+    .telemetry-item .label {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    .telemetry-item .value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #ffffff;
+      margin-top: 4px;
+    }
+
+    .console-log {
+      height: 200px;
+      background: #040811;
+      border: 1px solid rgba(0, 229, 255, 0.2);
+      border-radius: 10px;
+      padding: 10px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.78rem;
+      color: #94a3b8;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .console-log .entry {
+      line-height: 1.4;
+    }
+
+    .console-log .entry.alert {
+      color: var(--accent-yellow);
+    }
+
+    .console-log .entry.critical {
+      color: var(--accent-red);
+    }
+
+    .console-log .entry.success {
+      color: var(--accent-green);
+    }
+
+    .legend-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      font-size: 0.8rem;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .legend-color {
+      width: 14px;
+      height: 14px;
+      border-radius: 4px;
+    }
+
+    .slider-box {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.85rem;
+    }
+
+    input[type=range] {
+      accent-color: var(--accent-cyan);
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      <div class="brand-icon">🌊</div>
+      <div>
+        <h1>AUV Survey Vehicle — Reactive-Deliberative Cockpit</h1>
+        <div style="font-size: 0.75rem; color: var(--text-muted);">CSE518: Artificial Intelligence | Monsoon 2026</div>
+      </div>
+    </div>
+    <div class="student-badge">
+      AU2420174 &bull; Shifataj Haroon Shaikh
+    </div>
+  </header>
+
+  <main>
+    <!-- Map & View Panel -->
+    <div class="view-panel">
+      <div class="control-toolbar">
+        <div class="btn-group">
+          <button id="btnPlay" class="primary">▶ Start Mission</button>
+          <button id="btnStep">⏭ Step</button>
+          <button id="btnReset">↺ Reset</button>
+        </div>
+
+        <div class="btn-group">
+          <div class="select-wrapper">
+            <select id="selHeuristic">
+              <option value="h2">H2: Manhattan Distance (Recommended)</option>
+              <option value="h3">H3: Current-Aware Informed</option>
+              <option value="h1">H1: Scaled Euclidean</option>
+              <option value="h0">H0: Zero / UCS Baseline</option>
+            </select>
+          </div>
+          <div class="slider-box">
+            <span>Speed:</span>
+            <input type="range" id="speedSlider" min="1" max="20" value="6">
+            <span id="speedDisplay" style="font-family: 'JetBrains Mono'; font-weight: 600;">6x</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="canvas-container">
+        <canvas id="oceanCanvas"></canvas>
+      </div>
+
+      <!-- Legend Footer -->
+      <div class="legend-grid">
+        <div class="legend-item"><div class="legend-color" style="background: #113264; border: 1px solid #1e5ba8;"></div> Open Water (Cost: 2)</div>
+        <div class="legend-item"><div class="legend-color" style="background: #0d4a34; border: 1px solid #168a60;"></div> Kelp Forest (Cost: 6)</div>
+        <div class="legend-item"><div class="legend-color" style="background: #27272a; border: 1px solid #52525b;"></div> Reef (Impassable)</div>
+        <div class="legend-item"><div class="legend-color" style="background: #ff9100;"></div> Charging Dock (C)</div>
+        <div class="legend-item"><div class="legend-color" style="background: #00e5ff;"></div> Home Base (H)</div>
+        <div class="legend-item"><div class="legend-color" style="background: #b388ff;"></div> Survey Sites (1-5)</div>
+      </div>
+    </div>
+
+    <!-- Side Telemetry Panel -->
+    <div class="side-panel">
+      <!-- Battery Gauge Card -->
+      <div class="card">
+        <div class="card-title">
+          <span>Battery System</span>
+          <span id="batteryPercentText" style="font-family: 'JetBrains Mono'; color: var(--accent-green);">100%</span>
+        </div>
+        <div class="gauge-container">
+          <div class="gauge-bar-bg">
+            <div id="batteryFill" class="gauge-bar-fill"></div>
+          </div>
+        </div>
+        <div class="battery-stats">
+          <span style="color: var(--text-muted);">Current: <strong id="lblBatteryVal" style="color: #fff;">50.0</strong> / 50</span>
+          <span id="lblBatteryState" style="color: var(--accent-green);">OPTIMAL</span>
+        </div>
+      </div>
+
+      <!-- Live Telemetry Card -->
+      <div class="card">
+        <div class="card-title">Mission Telemetry</div>
+        <div class="telemetry-grid">
+          <div class="telemetry-item">
+            <div class="label">Position (R, C)</div>
+            <div id="valPos" class="value">(13, 1)</div>
+          </div>
+          <div class="telemetry-item">
+            <div class="label">Total Steps</div>
+            <div id="valSteps" class="value">0</div>
+          </div>
+          <div class="telemetry-item">
+            <div class="label">Energy Spent</div>
+            <div id="valEnergy" class="value">0.0</div>
+          </div>
+          <div class="telemetry-item">
+            <div class="label">Recharge Events</div>
+            <div id="valRecharges" class="value">0</div>
+          </div>
+          <div class="telemetry-item">
+            <div class="label">Nodes Expanded</div>
+            <div id="valNodes" class="value">0</div>
+          </div>
+          <div class="telemetry-item">
+            <div class="label">Current Tile Flow</div>
+            <div id="valCurrent" class="value">None</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Event Log -->
+      <div class="card" style="flex: 1; display: flex; flex-direction: column;">
+        <div class="card-title">
+          <span>Reflex Controller Log</span>
+          <span style="font-size: 0.7rem; color: var(--text-muted);">LIVE SENSOR FEED</span>
+        </div>
+        <div id="consoleLog" class="console-log">
+          <div class="entry success">[0.0s] System initialized at Home Base (13, 1). Battery full.</div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // Map Definition
+    const MAP_RAW = {
+      rows: 15,
+      cols: 20,
+      battery: 50,
+      terrain: [
+        "..~~~......#....~~..",
+        ".1~~~..#...C#...~2..",
+        "..~~...#....#...~~..",
+        "....####....####....",
+        "....................",
+        "....................",
+        "...~~~~.....~~~~....",
+        "...~5~~..#..~~~~..3.",
+        "...~~~~..#..........",
+        "......#####.....##..",
+        ".........~~~~.......",
+        "..##.....~~~~...C...",
+        "..#..........#......",
+        ".H#...........#..4..",
+        "..............#....."
+      ],
+      currents: [
+        "....................",
+        "^^..................",
+        "^^..................",
+        "^^..................",
+        ">>>>>>>>>>>>>>>>>>>>",
+        ">>>>>>>>>>>>>>>>>>>>",
+        "^^................vv",
+        "^^................vv",
+        "^^................vv",
+        "^^................vv",
+        "^^................vv",
+        "^^................vv",
+        "^^................vv",
+        "...<<<<<<<<<<<.<<<..",
+        "...<<<<<<<<<<<.<<<.."
+      ]
+    };
+
+    // State Variables
+    let homeBase = { r: 13, c: 1 };
+    let docks = [{ r: 1, c: 11 }, { r: 11, c: 16 }];
+    let chargers = [homeBase, ...docks];
+    let surveySites = {
+      '1': { r: 1, c: 1 },
+      '2': { r: 1, c: 17 },
+      '3': { r: 7, c: 18 },
+      '4': { r: 13, c: 17 },
+      '5': { r: 7, c: 4 }
+    };
+
+    let auv = {
+      r: 13,
+      c: 1,
+      battery: 50,
+      heading: 0
+    };
+
+    let isRunning = false;
+    let simTimer = null;
+    let currentStep = 0;
+    let totalBatteryUsed = 0;
+    let totalRecharges = 0;
+    let totalNodesExpanded = 0;
+    let pathHistory = [{ r: 13, c: 1 }];
+    let activePath = [];
+    let unvisitedSites = ['1', '2', '3', '4', '5'];
+    let visitedSites = [];
+    let currentMissionTarget = null;
+    let waveOffset = 0;
+
+    const canvas = document.getElementById('oceanCanvas');
+    const ctx = canvas.getContext('2d');
+    let tileSize = 42;
+
+    function initCanvas() {
+      canvas.width = MAP_RAW.cols * tileSize;
+      canvas.height = MAP_RAW.rows * tileSize;
+    }
+
+    // Direction helpers
+    const DIRS = [
+      { dr: -1, dc: 0, name: 'N', symbol: '^' },
+      { dr: 1, dc: 0, name: 'S', symbol: 'v' },
+      { dr: 0, dc: 1, name: 'E', symbol: '>' },
+      { dr: 0, dc: -1, name: 'W', symbol: '<' }
+    ];
+
+    const OPPOSITES = { 'N': 'S', 'S': 'N', 'E': 'W', 'W': 'E' };
+
+    function getBaseTerrainCost(r, c) {
+      const ch = MAP_RAW.terrain[r][c];
+      if (ch === '~') return 6.0;
+      if (ch === '#') return Infinity;
+      return 2.0; // Open water
+    }
+
+    function getMovementCost(fromR, fromC, toR, toC) {
+      if (toR < 0 || toR >= MAP_RAW.rows || toC < 0 || toC >= MAP_RAW.cols) return Infinity;
+      const baseCost = getBaseTerrainCost(toR, toC);
+      if (baseCost === Infinity) return Infinity;
+
+      const dr = toR - fromR;
+      const dc = toC - fromC;
+      let moveDir = null;
+      if (dr === -1 && dc === 0) moveDir = 'N';
+      else if (dr === 1 && dc === 0) moveDir = 'S';
+      else if (dr === 0 && dc === 1) moveDir = 'E';
+      else if (dr === 0 && dc === -1) moveDir = 'W';
+
+      const curChar = MAP_RAW.currents[toR][toC];
+      let curDir = null;
+      if (curChar === '^') curDir = 'N';
+      else if (curChar === 'v') curDir = 'S';
+      else if (curChar === '>') curDir = 'E';
+      else if (curChar === '<') curDir = 'W';
+
+      let mult = 1.0;
+      if (curDir) {
+        if (moveDir === curDir) mult = 0.5;
+        else if (moveDir === OPPOSITES[curDir]) mult = 2.0;
+        else mult = 1.0;
+      }
+      return baseCost * mult;
+    }
+
+    // Heuristics
+    function getHeuristic(r, c, gr, gc, type) {
+      const dr = Math.abs(r - gr);
+      const dc = Math.abs(c - gc);
+      if (type === 'h0') return 0;
+      if (type === 'h1') return Math.sqrt(dr * dr + dc * dc) * 1.0;
+      if (type === 'h2') return (dr + dc) * 1.0;
+      if (type === 'h3') return (dr + dc) * 1.0; // directional bound
+      return (dr + dc);
+    }
+
+    // A* Pathfinding
+    function aStar(start, goal, hType) {
+      if (start.r === goal.r && start.c === goal.c) return { path: [start], cost: 0, nodes: 1 };
+
+      let openSet = [];
+      let cameFrom = new Map();
+      let gScore = new Map();
+
+      const key = (p) => `${p.r},${p.c}`;
+      gScore.set(key(start), 0);
+      openSet.push({ pos: start, f: getHeuristic(start.r, start.c, goal.r, goal.c, hType), g: 0 });
+
+      let closed = new Set();
+      let nodes = 0;
+
+      while (openSet.length > 0) {
+        openSet.sort((a, b) => a.f - b.f);
+        let curr = openSet.shift();
+        let k = key(curr.pos);
+
+        if (closed.has(k)) continue;
+        closed.add(k);
+        nodes++;
+
+        if (curr.pos.r === goal.r && curr.pos.c === goal.c) {
+          let path = [];
+          let trace = curr.pos;
+          while (cameFrom.has(key(trace))) {
+            path.push(trace);
+            trace = cameFrom.get(key(trace));
+          }
+          path.push(start);
+          path.reverse();
+          totalNodesExpanded += nodes;
+          return { path, cost: curr.g, nodes };
+        }
+
+        for (let d of DIRS) {
+          let nr = curr.pos.r + d.dr;
+          let nc = curr.pos.c + d.dc;
+          let neighbor = { r: nr, c: nc };
+          let cost = getMovementCost(curr.pos.r, curr.pos.c, nr, nc);
+
+          if (cost < Infinity) {
+            let tentG = curr.g + cost;
+            let nk = key(neighbor);
+            if (tentG < (gScore.get(nk) ?? Infinity)) {
+              cameFrom.set(nk, curr.pos);
+              gScore.set(nk, tentG);
+              let fVal = tentG + getHeuristic(nr, nc, goal.r, goal.c, hType);
+              openSet.push({ pos: neighbor, f: fVal, g: tentG });
+            }
+          }
+        }
+      }
+      return { path: null, cost: Infinity, nodes };
+    }
+
+    function getCheapestCharger(pos, hType) {
+      let best = null;
+      let minCost = Infinity;
+      let bestPath = null;
+      for (let ch of chargers) {
+        let res = aStar(pos, ch, hType);
+        if (res.path && res.cost < minCost) {
+          minCost = res.cost;
+          best = ch;
+          bestPath = res.path;
+        }
+      }
+      return { charger: best, path: bestPath, cost: minCost };
+    }
+
+    function logEvent(msg, type = 'normal') {
+      const consoleBox = document.getElementById('consoleLog');
+      const entry = document.createElement('div');
+      entry.className = `entry ${type}`;
+      entry.textContent = `[Step ${currentStep}] ${msg}`;
+      consoleBox.appendChild(entry);
+      consoleBox.scrollTop = consoleBox.scrollHeight;
+    }
+
+    function updateHUD() {
+      document.getElementById('lblBatteryVal').textContent = auv.battery.toFixed(1);
+      const pct = Math.max(0, Math.min(100, (auv.battery / MAP_RAW.battery) * 100));
+      document.getElementById('batteryPercentText').textContent = `${pct.toFixed(0)}%`;
+      const fill = document.getElementById('batteryFill');
+      fill.style.width = `${pct}%`;
+
+      const stateLbl = document.getElementById('lblBatteryState');
+      if (pct < 25) {
+        fill.style.background = 'linear-gradient(90deg, #ff1744, #ff5252)';
+        stateLbl.textContent = 'CRITICAL (<25%)';
+        stateLbl.style.color = 'var(--accent-red)';
+      } else if (pct <= 40) {
+        fill.style.background = 'linear-gradient(90deg, #ffd600, #ffea00)';
+        stateLbl.textContent = 'OPPORTUNISTIC (25-40%)';
+        stateLbl.style.color = 'var(--accent-yellow)';
+      } else {
+        fill.style.background = 'linear-gradient(90deg, #00e676, #00e5ff)';
+        stateLbl.textContent = 'OPTIMAL';
+        stateLbl.style.color = 'var(--accent-green)';
+      }
+
+      document.getElementById('valPos').textContent = `(${auv.r}, ${auv.c})`;
+      document.getElementById('valSteps').textContent = currentStep;
+      document.getElementById('valEnergy').textContent = totalBatteryUsed.toFixed(1);
+      document.getElementById('valRecharges').textContent = totalRecharges;
+      document.getElementById('valNodes').textContent = totalNodesExpanded;
+
+      const curChar = MAP_RAW.currents[auv.r][auv.c];
+      const curMap = { '^': 'North ↑', 'v': 'South ↓', '>': 'East →', '<': 'West ←', '.': 'None' };
+      document.getElementById('valCurrent').textContent = curMap[curChar] || 'None';
+    }
+
+    // Step Simulation
+    function stepSimulation() {
+      const hType = document.getElementById('selHeuristic').value;
+
+      // Check if mission complete
+      if (unvisitedSites.length === 0 && auv.r === homeBase.r && auv.c === homeBase.c) {
+        logEvent('MISSION ACCOMPLISHED! All survey sites mapped and AUV returned to Home Base.', 'success');
+        stopSimulation();
+        return;
+      }
+
+      // Check if we need to plan a route
+      if (!activePath || activePath.length <= 1) {
+        if (unvisitedSites.length > 0) {
+          // Nearest neighbor site
+          let bestSite = null;
+          let bestCost = Infinity;
+          let bestPath = null;
+          for (let sId of unvisitedSites) {
+            let target = surveySites[sId];
+            let res = aStar(auv, target, hType);
+            if (res.path && res.cost < bestCost) {
+              bestCost = res.cost;
+              bestSite = sId;
+              bestPath = res.path;
+            }
+          }
+          currentMissionTarget = surveySites[bestSite];
+          activePath = bestPath;
+          logEvent(`Deliberative Planner: Setting route to Survey Site ${bestSite}`);
+        } else {
+          currentMissionTarget = homeBase;
+          let res = aStar(auv, homeBase, hType);
+          activePath = res.path;
+          logEvent(`Deliberative Planner: Setting return path to Home Base H`);
+        }
+      }
+
+      if (!activePath || activePath.length <= 1) {
+        logEvent(`Warning: Cannot find path to destination!`, 'critical');
+        stopSimulation();
+        return;
+      }
+
+      const nextTile = activePath[1];
+
+      // --- REFLEX RULES EVALUATION ---
+      // Rule 4: Opportunistic Recharging (25% <= Battery <= 40% and charger <= 4 cost)
+      if (auv.battery >= 0.25 * MAP_RAW.battery && auv.battery <= 0.40 * MAP_RAW.battery) {
+        for (let ch of chargers) {
+          let res = aStar(auv, ch, hType);
+          if (res.path && res.cost <= 4.0) {
+            logEvent(`Reflex Rule 4 Triggered: Opportunistic Recharge at (${ch.r}, ${ch.c}) [Cost: ${res.cost.toFixed(1)}]`, 'alert');
+            executeDivertToCharger(res.path);
+            return;
+          }
+        }
+      }
+
+      // Rule 1: Emergency Recharge (Battery < 25%)
+      if (auv.battery < 0.25 * MAP_RAW.battery) {
+        let chRes = getCheapestCharger(auv, hType);
+        logEvent(`Reflex Rule 1 Triggered: Critical Battery (${auv.battery.toFixed(1)}). Diverting to (${chRes.charger.r}, ${chRes.charger.c})`, 'critical');
+        executeDivertToCharger(chRes.path);
+        return;
+      }
+
+      // Rule 3: Lookahead Safety Invariant Check
+      const moveCost = getMovementCost(auv.r, auv.c, nextTile.r, nextTile.c);
+      const batteryAfterMove = auv.battery - moveCost;
+      const minCostToChargerFromNext = getCheapestCharger(nextTile, hType).cost;
+
+      if (batteryAfterMove < minCostToChargerFromNext) {
+        let chRes = getCheapestCharger(auv, hType);
+        logEvent(`Reflex Rule 3 Triggered: Next move violates lookahead invariant! Diverting to charger safely.`, 'critical');
+        executeDivertToCharger(chRes.path);
+        return;
+      }
+
+      // Execute Normal Move
+      auv.battery -= moveCost;
+      totalBatteryUsed += moveCost;
+      auv.r = nextTile.r;
+      auv.c = nextTile.c;
+      currentStep++;
+      pathHistory.push({ r: auv.r, c: auv.c });
+      activePath.shift();
+
+      // Check survey site reached
+      for (let sId of [...unvisitedSites]) {
+        let s = surveySites[sId];
+        if (s.r === auv.r && s.c === auv.c) {
+          unvisitedSites = unvisitedSites.filter(x => x !== sId);
+          visitedSites.push(sId);
+          logEvent(`Survey Site ${sId} successfully surveyed! (${unvisitedSites.length} remaining)`, 'success');
+        }
+      }
+
+      updateHUD();
+      draw();
+    }
+
+    function executeDivertToCharger(rechargePath) {
+      if (!rechargePath || rechargePath.length <= 1) return;
+      for (let i = 1; i < rechargePath.length; i++) {
+        let step = rechargePath[i];
+        let c = getMovementCost(auv.r, auv.c, step.r, step.c);
+        auv.battery -= c;
+        totalBatteryUsed += c;
+        auv.r = step.r;
+        auv.c = step.c;
+        currentStep++;
+        pathHistory.push({ r: auv.r, c: auv.c });
+      }
+      auv.battery = MAP_RAW.battery;
+      totalRecharges++;
+      activePath = []; // Re-plan remaining mission
+      logEvent(`Refilled battery to 100% (50.0). Re-planning remaining tour.`, 'success');
+      updateHUD();
+      draw();
+    }
+
+    // Canvas Rendering
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      waveOffset = (waveOffset + 0.3) % (Math.PI * 2);
+
+      // 1. Draw Grid Cells
+      for (let r = 0; r < MAP_RAW.rows; r++) {
+        for (let c = 0; c < MAP_RAW.cols; c++) {
+          const x = c * tileSize;
+          const y = r * tileSize;
+          const t = MAP_RAW.terrain[r][c];
+          const cur = MAP_RAW.currents[r][c];
+
+          // Base terrain background
+          if (t === '~') {
+            ctx.fillStyle = '#083c2a'; // Kelp
+          } else if (t === '#') {
+            ctx.fillStyle = '#1c1c20'; // Reef
+          } else {
+            ctx.fillStyle = '#0a1d37'; // Open water
+          }
+          ctx.fillRect(x, y, tileSize, tileSize);
+
+          // Grid borders
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
+          ctx.lineWidth = 1;
+          ctx.strokeRect(x, y, tileSize, tileSize);
+
+          // Ocean Current Flow Arrows
+          if (cur && cur !== '.') {
+            ctx.save();
+            ctx.translate(x + tileSize / 2, y + tileSize / 2);
+            let rot = 0;
+            if (cur === '^') rot = -Math.PI / 2;
+            else if (cur === 'v') rot = Math.PI / 2;
+            else if (cur === '>') rot = 0;
+            else if (cur === '<') rot = Math.PI;
+            ctx.rotate(rot);
+
+            ctx.fillStyle = 'rgba(0, 229, 255, 0.28)';
+            ctx.beginPath();
+            ctx.moveTo(8, 0);
+            ctx.lineTo(-4, -5);
+            ctx.lineTo(-4, 5);
+            ctx.closePath();
+            ctx.fill();
+            ctx.restore();
+          }
+
+          // Special Markers
+          if (t === 'H') {
+            drawMarker(x, y, 'H', '#00e5ff', '🏠');
+          } else if (t === 'C') {
+            drawMarker(x, y, 'C', '#ff9100', '⚡');
+          } else if (t >= '1' && t <= '9') {
+            let visited = visitedSites.includes(t);
+            drawMarker(x, y, t, visited ? '#00e676' : '#b388ff', visited ? '✓' : t);
+          }
+        }
+      }
+
+      // 2. Draw Trajectory Path Breadcrumbs
+      if (pathHistory.length > 1) {
+        ctx.beginPath();
+        ctx.strokeStyle = 'rgba(0, 229, 255, 0.6)';
+        ctx.lineWidth = 3;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        for (let i = 0; i < pathHistory.length; i++) {
+          let px = pathHistory[i].c * tileSize + tileSize / 2;
+          let py = pathHistory[i].r * tileSize + tileSize / 2;
+          if (i === 0) ctx.moveTo(px, py);
+          else ctx.lineTo(px, py);
+        }
+        ctx.stroke();
+      }
+
+      // 3. Draw Planned Route Preview
+      if (activePath && activePath.length > 0) {
+        ctx.beginPath();
+        ctx.strokeStyle = 'rgba(255, 214, 0, 0.8)';
+        ctx.setLineDash([4, 4]);
+        ctx.lineWidth = 2;
+        for (let i = 0; i < activePath.length; i++) {
+          let px = activePath[i].c * tileSize + tileSize / 2;
+          let py = activePath[i].r * tileSize + tileSize / 2;
+          if (i === 0) ctx.moveTo(px, py);
+          else ctx.lineTo(px, py);
+        }
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+
+      // 4. Draw AUV Submarine
+      const auvX = auv.c * tileSize + tileSize / 2;
+      const auvY = auv.r * tileSize + tileSize / 2;
+
+      ctx.save();
+      ctx.translate(auvX, auvY);
+
+      // Thruster bubble pulse
+      ctx.beginPath();
+      ctx.arc(0, 0, 18, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(0, 229, 255, 0.2)';
+      ctx.fill();
+
+      // Submarine hull
+      ctx.beginPath();
+      ctx.arc(0, 0, 11, 0, Math.PI * 2);
+      ctx.fillStyle = '#00e5ff';
+      ctx.shadowColor = '#00e5ff';
+      ctx.shadowBlur = 15;
+      ctx.fill();
+
+      // Inner lens
+      ctx.beginPath();
+      ctx.arc(0, 0, 5, 0, Math.PI * 2);
+      ctx.fillStyle = '#031024';
+      ctx.fill();
+      ctx.restore();
+    }
+
+    function drawMarker(x, y, label, color, icon) {
+      ctx.save();
+      ctx.translate(x + tileSize / 2, y + tileSize / 2);
+      ctx.fillStyle = color;
+      ctx.shadowColor = color;
+      ctx.shadowBlur = 10;
+      ctx.beginPath();
+      ctx.arc(0, 0, 12, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = '#051021';
+      ctx.font = 'bold 11px JetBrains Mono';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(label, 0, 1);
+      ctx.restore();
+    }
+
+    function startSimulation() {
+      if (isRunning) return;
+      isRunning = true;
+      document.getElementById('btnPlay').textContent = '⏸ Pause';
+      const speed = parseInt(document.getElementById('speedSlider').value);
+      const interval = Math.max(50, 600 / speed);
+      simTimer = setInterval(stepSimulation, interval);
+    }
+
+    function stopSimulation() {
+      isRunning = false;
+      document.getElementById('btnPlay').textContent = '▶ Resume';
+      clearInterval(simTimer);
+    }
+
+    function resetSimulation() {
+      stopSimulation();
+      document.getElementById('btnPlay').textContent = '▶ Start Mission';
+      auv.r = homeBase.r;
+      auv.c = homeBase.c;
+      auv.battery = MAP_RAW.battery;
+      currentStep = 0;
+      totalBatteryUsed = 0;
+      totalRecharges = 0;
+      totalNodesExpanded = 0;
+      pathHistory = [{ r: homeBase.r, c: homeBase.c }];
+      activePath = [];
+      unvisitedSites = ['1', '2', '3', '4', '5'];
+      visitedSites = [];
+      document.getElementById('consoleLog').innerHTML = '';
+      logEvent('Simulation reset. AUV restored to Home Base with full battery.');
+      updateHUD();
+      draw();
+    }
+
+    // Event Listeners
+    document.getElementById('btnPlay').addEventListener('click', () => {
+      if (isRunning) stopSimulation();
+      else startSimulation();
+    });
+
+    document.getElementById('btnStep').addEventListener('click', () => {
+      stopSimulation();
+      stepSimulation();
+    });
+
+    document.getElementById('btnReset').addEventListener('click', resetSimulation);
+
+    document.getElementById('speedSlider').addEventListener('input', (e) => {
+      const val = e.target.value;
+      document.getElementById('speedDisplay').textContent = `${val}x`;
+      if (isRunning) {
+        stopSimulation();
+        startSimulation();
+      }
+    });
+
+    // Initialize
+    initCanvas();
+    updateHUD();
+    draw();
+  </script>
+</body>
+</html>
